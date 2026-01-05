@@ -7,20 +7,22 @@ let package = Package(
     name: "LiquidGlassKit",
     platforms: [
         .iOS(.v13),
+        .macOS(.v11),
     ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "LiquidGlassKit",
-            targets: ["LiquidGlassKit"]
+            targets: ["LiquidGlassKit"],
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/Lakr233/MSDisplayLink", from: "2.0.8"),
+    ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "LiquidGlassKit"
+            name: "LiquidGlassKit", dependencies: [
+                "MSDisplayLink",
+            ],
         ),
-
-    ]
+    ],
 )

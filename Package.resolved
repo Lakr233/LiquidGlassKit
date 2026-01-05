@@ -1,0 +1,15 @@
+{
+  "originHash" : "75d347d2b4c95b1cded83cf7211cb348782b3b1db375b51efcbf70d24ca5b8ce",
+  "pins" : [
+    {
+      "identity" : "msdisplaylink",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/MSDisplayLink",
+      "state" : {
+        "revision" : "ebf5823cb5fc1326639d9a05bc06d16bbe82989f",
+        "version" : "2.0.8"
+      }
+    }
+  ],
+  "version" : 3
+}

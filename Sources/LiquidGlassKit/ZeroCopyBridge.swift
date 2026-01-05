@@ -25,7 +25,7 @@ class ZeroCopyBridge {
         let attrs = [
             kCVPixelBufferMetalCompatibilityKey: true,
             kCVPixelBufferCGImageCompatibilityKey: true,
-            kCVPixelBufferIOSurfacePropertiesKey: [:] // Enables zero-copy via IOSurface
+            kCVPixelBufferIOSurfacePropertiesKey: [:], // Enables zero-copy via IOSurface
         ] as CFDictionary
 
         let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attrs, &pixelBuffer)
@@ -55,7 +55,7 @@ class ZeroCopyBridge {
             CVPixelBufferUnlockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
             CVMetalTextureCacheFlush(cache, 0)
         }
-        
+
         let data = CVPixelBufferGetBaseAddress(buffer)
         let bytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
 
@@ -67,7 +67,7 @@ class ZeroCopyBridge {
             bitsPerComponent: 8,
             bytesPerRow: bytesPerRow,
             space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue,
         ) else {
             return nil
         }
