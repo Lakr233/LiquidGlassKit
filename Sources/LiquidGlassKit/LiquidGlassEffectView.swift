@@ -105,7 +105,7 @@
         public var spacing = 10.0
 
         /// Creates a combined glass effect.
-        public override init() {
+        override public init() {
             super.init()
         }
 
@@ -124,11 +124,11 @@
 
     public func VisualEffectView(effect: UIVisualEffect?) -> AnyVisualEffectView {
         if let effect = effect as? LiquidGlassEffect {
-            return LiquidGlassEffectView(effect: effect)
+            LiquidGlassEffectView(effect: effect)
         } else if let effect = effect as? LiquidGlassContainerEffect {
-            return LiquidGlassEffectView(effect: effect)
+            LiquidGlassEffectView(effect: effect)
         } else {
-            return UIVisualEffectView(effect: effect)
+            UIVisualEffectView(effect: effect)
         }
     }
 

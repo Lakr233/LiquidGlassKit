@@ -9,7 +9,7 @@
     import UIKit
     internal import MetalKit
 
-    /// A custom switch control that replicates the iOS 26 Liquid Glass sliding style.
+    /// A custom switch control that replicates the Liquid Glass sliding style.
     /// Fully compatible with UISwitch interface for drop-in replacement.
     open class LiquidGlassSwitch: UIControl {
         // MARK: - Public Properties (UISwitch Interface)
@@ -38,14 +38,14 @@
             didSet { updateThumbAppearance() }
         }
 
-        /// The image displayed when the switch is in the on position (not used in iOS 26 style, kept for compatibility).
+        /// The image displayed when the switch is in the on position (kept for compatibility).
         open var onImage: UIImage? {
-            didSet { /* No-op for iOS 26 style */ }
+            didSet { /* No-op for compatibility */ }
         }
 
-        /// The image displayed when the switch is in the off position (not used in iOS 26 style, kept for compatibility).
+        /// The image displayed when the switch is in the off position (kept for compatibility).
         open var offImage: UIImage? {
-            didSet { /* No-op for iOS 26 style */ }
+            didSet { /* No-op for compatibility */ }
         }
 
         @available(iOS 14.0, *)

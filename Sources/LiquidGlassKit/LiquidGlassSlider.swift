@@ -9,7 +9,7 @@
     import UIKit
     internal import MetalKit
 
-    /// A custom slider control that replicates the iOS 26 Liquid Glass sliding style.
+    /// A custom slider control that replicates the Liquid Glass sliding style.
     /// Fully compatible with UISlider interface for drop-in replacement.
     open class LiquidGlassSlider: UIControl {
         // MARK: - Public Properties (UISlider Interface)
@@ -67,14 +67,14 @@
         open var isContinuous: Bool = true
 
         /// The slider's visual style.
-        @available(iOS 26.0, *)
+        ///
+        /// This is a compatibility shim: the control always renders in a custom style,
+        /// but exposing the property allows drop-in replacement for code that expects it.
+        @available(iOS 14.0, *)
         open var sliderStyle: UISlider.Style {
-            get { isThumbless ? .thumbless : .default }
-            set { isThumbless = (newValue == .thumbless) }
+            get { .default }
+            set {}
         }
-
-        /// Internal storage for slider style (true = thumbless, false = continuous).
-        private var isThumbless: Bool = false
 
         /// The color used to tint the portion of the track to the left of the thumb.
         open var minimumTrackTintColor: UIColor? {
@@ -856,7 +856,7 @@
         var minimumValueImage: UIImage? { get set }
         var maximumValueImage: UIImage? { get set }
         var isContinuous: Bool { get set }
-        @available(iOS 26.0, *)
+        @available(iOS 14.0, *)
         var sliderStyle: UISlider.Style { get set }
         var minimumTrackTintColor: UIColor? { get set }
         var maximumTrackTintColor: UIColor? { get set }
