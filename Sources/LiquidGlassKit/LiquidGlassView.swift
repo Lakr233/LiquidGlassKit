@@ -195,6 +195,51 @@ struct LiquidGlass {
             layer.shadowOffset = .init(width: 0, height: shadowRadius + 2)
         }
     }
+
+#elseif canImport(AppKit)
+    final class BackdropView: NSView {
+        private let groupName = UUID().uuidString
+
+        override init(frame frameRect: NSRect) {
+            super.init(frame: frameRect)
+            wantsLayer = true
+            layer?.isOpaque = false
+            layer?.setValue(false, forKey: "layerUsesCoreImageFilters")
+            layer?.setValue(true, forKey: "windowServerAware")
+            layer?.setValue(groupName, forKey: "groupName")
+        }
+
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+
+        override func hitTest(_: NSPoint) -> NSView? {
+            nil
+        }
+
+        override func makeBackingLayer() -> CALayer {
+            let template = NSVisualEffectView(frame: .zero)
+            template.blendingMode = .behindWindow
+            template.material = .underWindowBackground
+            template.state = .active
+            template.wantsLayer = true
+
+            let directType = template.layer.map { type(of: $0) }
+            let sublayerType = template.layer?.sublayers?.first {
+                String(describing: type(of: $0)) == "CABackdropLayer"
+            }.map { type(of: $0) }
+
+            let backdropLayerType = directType ?? sublayerType ?? (NSClassFromString("CABackdropLayer") as? CALayer.Type)
+            let backdropLayer = backdropLayerType?.init() ?? CALayer()
+
+            backdropLayer.setValue(false, forKey: "layerUsesCoreImageFilters")
+            backdropLayer.setValue(true, forKey: "windowServerAware")
+            backdropLayer.setValue(groupName, forKey: "groupName")
+
+            return backdropLayer
+        }
+    }
 #endif
 
 final class LiquidGlassRenderer {
@@ -240,8 +285,14 @@ final class LiquidGlassRenderer {
 
     var frames: [CGRect] = []
 
+    /// Controls how strongly shapes merge together.
+    /// Higher values merge across larger gaps.
+    var mergeSpacing: Double = 10
+
     #if canImport(UIKit)
         private weak var shadowView: ShadowView?
+        private let backdropView = BackdropView()
+    #elseif canImport(AppKit)
         private let backdropView = BackdropView()
     #endif
 
@@ -358,6 +409,8 @@ final class LiquidGlassRenderer {
     func captureBackground() {
         #if canImport(UIKit)
             captureBackdrop()
+        #elseif canImport(AppKit)
+            captureBackdrop()
         #else
             captureRootView()
         #endif
@@ -440,6 +493,48 @@ final class LiquidGlassRenderer {
 
             blurTexture()
         }
+
+    #elseif canImport(AppKit)
+        func captureBackdrop() {
+            guard let superview else { return }
+            guard let viewLayer = layer else { return }
+            guard let superviewLayer = superview.layer else { return }
+
+            let sizeCoefficient = liquidGlass.backgroundTextureSizeCoefficient
+            let scaleCoefficient = resolvedContentsScale * liquidGlass.backgroundTextureScaleCoefficient
+
+            let currentLayer = viewLayer.presentation() ?? viewLayer
+            let frameInSuperview = currentLayer.convert(currentLayer.bounds, to: superviewLayer)
+
+            let captureSize = CGSize(
+                width: frameInSuperview.width * sizeCoefficient,
+                height: frameInSuperview.height * sizeCoefficient,
+            )
+            let captureOrigin = CGPoint(
+                x: frameInSuperview.midX - captureSize.width / 2,
+                y: frameInSuperview.midY - captureSize.height / 2,
+            )
+
+            backdropView.frame = CGRect(origin: captureOrigin, size: captureSize)
+
+            if backdropView.superview !== superview {
+                superview.addSubview(backdropView, positioned: .below, relativeTo: self)
+            }
+
+            backgroundTexture = zeroCopyBridge.render { context in
+                let wasHidden = isHidden
+                isHidden = true
+                defer { isHidden = wasHidden }
+
+                context.scaleBy(x: scaleCoefficient, y: scaleCoefficient)
+
+                backdropView.display()
+                guard let viewLayer = backdropView.layer else { return }
+                viewLayer.render(in: context)
+            }
+
+            blurTexture()
+        }
     #endif
 
     private func blurTexture() {
@@ -467,7 +562,10 @@ final class LiquidGlassRenderer {
         )
         uniforms.contentsScale = Float(scaleFactor)
 
-        uniforms.shapeMergeSmoothness = 0.2
+        let maxSpacing: Double = 400
+        let clampedSpacing = min(max(mergeSpacing, 0), maxSpacing)
+        let normalizedSpacing = clampedSpacing / max(bounds.height, 1)
+        uniforms.shapeMergeSmoothness = Float(normalizedSpacing)
 
         let effectiveFrames = frames.isEmpty ? [bounds] : frames
         uniforms.rectangleCount = Int32(min(effectiveFrames.count, LiquidGlass.maxRectangles))
