@@ -6,18 +6,18 @@
 //
 
 #if canImport(UIKit)
+    import CoreGraphics
     import UIKit
-    internal import CoreGraphics
 #elseif canImport(AppKit)
     import AppKit
-    internal import CoreGraphics
+    import CoreGraphics
 #else
     #error("Unsupported platform")
 #endif
 
-internal import simd
-internal import MetalKit
-internal import MetalPerformanceShaders
+import MetalKit
+import MetalPerformanceShaders
+import simd
 
 struct LiquidGlass {
     /// Maximum number of rectangles supported in the shader.
@@ -204,18 +204,12 @@ final class LiquidGlassRenderer {
     let pipelineState: MTLRenderPipelineState
 
     private init() {
-        guard let device = MTLCreateSystemDefaultDevice() else {
-            fatalError("Metal not supported")
+        guard let device = MTLCreateSystemDefaultDevice(),
+              let library = try? device.makeDefaultLibrary(bundle: .module)
+        else {
+            fatalError("Metal or Shader not available")
         }
         self.device = device
-
-        #if SWIFT_PACKAGE
-            let library = device.makeDefaultLibrary()!
-        #else
-            let mainBundle = Bundle(for: LiquidGlassView.self)
-            let bundleURL = mainBundle.url(forResource: "LiquidGlassKitShaderResources", withExtension: "bundle")!
-            let library = try! device.makeDefaultLibrary(bundle: Bundle(url: bundleURL)!)
-        #endif
 
         let vertexFunction = library.makeFunction(name: "fullscreenQuad")!
         let fragmentFunction = library.makeFunction(name: "liquidGlassEffect")!

@@ -6,7 +6,8 @@ import PackageDescription
 let package = Package(
     name: "LiquidGlassKit",
     platforms: [
-        .iOS(.v13),
+        .iOS(.v16),
+        .macCatalyst(.v16),
         .macOS(.v11),
     ],
     products: [
@@ -20,8 +21,13 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "LiquidGlassKit", dependencies: [
+            name: "LiquidGlassKit",
+            dependencies: [
                 "MSDisplayLink",
+            ],
+            resources: [
+                .process("Resources/Shaders/LiquidGlassFragment.metal"),
+                .process("Resources/Shaders/LiquidGlassVertex.metal"),
             ],
         ),
     ],

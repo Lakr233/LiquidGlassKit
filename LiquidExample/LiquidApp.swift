@@ -12,6 +12,6 @@ struct LiquidApp: App {
         WindowGroup {
             ContentView()
         }
-        .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
     }
 }
